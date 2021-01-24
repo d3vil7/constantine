@@ -19,13 +19,13 @@ export zoo_inversions
 #
 # ############################################################
 
-func inv_euclid*(r: var Fp, a: Fp) {.inline.} =
+func inv_euclid*(r: var FF, a: FF) {.inline.} =
   ## Inversion modulo p via
   ## Niels Moller constant-time version of
   ## Stein's GCD derived from extended binary Euclid algorithm
-  r.mres.steinsGCD(a.mres, Fp.getR2modP(), Fp.C.Mod, Fp.getPrimePlus1div2())
+  r.mres.steinsGCD(a.mres, FF.getR2modP(), FF.fieldMod(), FF.getPrimePlus1div2())
 
-func inv*(r: var Fp, a: Fp) {.inline.} =
+func inv*(r: var FF, a: FF) {.inline.} =
   ## Inversion modulo p
   ##
   ## The inverse of 0 is 0.
@@ -36,19 +36,16 @@ func inv*(r: var Fp, a: Fp) {.inline.} =
   # neither for Secp256k1 nor BN curves
   # Performance is slower than GCD
   # To be revisited with faster squaring/multiplications
-  when Fp.C.hasInversionAddchain():
+  when FF is Fp and FF.C.hasInversionAddchain():
     r.inv_addchain(a)
   else:
     r.inv_euclid(a)
 
-func inv*(a: var Fp) {.inline.} =
+func inv*(a: var FF) {.inline.} =
   ## Inversion modulo p
   ##
   ## The inverse of 0 is 0.
   ## Incidentally this avoids extra check
   ## to convert Jacobian and Projective coordinates
   ## to affine for elliptic curve
-  when Fp.C.hasInversionAddchain():
-    a.inv_addchain(a)
-  else:
-    a.inv_euclid(a)
+  a.inv(a)
